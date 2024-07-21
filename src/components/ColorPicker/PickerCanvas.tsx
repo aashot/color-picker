@@ -18,6 +18,7 @@ export const PickerCanvas: React.FC<PickerCanvasProps> = ({
 }) => {
   const zoomCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const hexCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const gridCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     const zoomCanvas = zoomCanvasRef.current;
@@ -50,16 +51,50 @@ export const PickerCanvas: React.FC<PickerCanvasProps> = ({
     if (hexCanvas && hexCtx) {
       hexCtx.clearRect(0, 0, hexCanvas.width, hexCanvas.height);
 
-      hexCtx.fillStyle = "rgba(255, 255, 255, 0.1)";
+      hexCtx.fillStyle = "rgba(255, 255, 255, 0.033)";
       hexCtx.fillRect(0, 0, hexCanvas.width, hexCanvas.height);
 
-      hexCtx.font = "19px Arial";
-      hexCtx.fillStyle = hexCode;
+      hexCtx.font = "12px Arial";
+      hexCtx.fillStyle = "#ffffff";
       hexCtx.textAlign = "center";
       hexCtx.textBaseline = "middle";
-      hexCtx.fillText(hexCode, hexCanvas.width / 2, hexCanvas.height / 2);
+
+      hexCtx.shadowColor = "rgba(0, 0, 0, 0.5)";
+      hexCtx.shadowOffsetX = 1;
+      hexCtx.shadowOffsetY = 1;
+      hexCtx.shadowBlur = 2;
+
+      const textX = hexCanvas.width / 2;
+      const textY = hexCanvas.height - 20;
+      hexCtx.fillText(hexCode, textX, textY);
     }
   }, [hexCode]);
+
+  useEffect(() => {
+    const gridCanvas = gridCanvasRef.current;
+    const gridCtx = gridCanvas?.getContext("2d");
+
+    if (gridCanvas && gridCtx) {
+      gridCtx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
+
+      const gridSize = 10;
+      gridCtx.strokeStyle = "rgba(255, 255, 255, 0.19)";
+
+      for (let x = 0; x < gridCanvas.width; x += gridSize) {
+        gridCtx.beginPath();
+        gridCtx.moveTo(x, 0);
+        gridCtx.lineTo(x, gridCanvas.height);
+        gridCtx.stroke();
+      }
+
+      for (let y = 0; y < gridCanvas.height; y += gridSize) {
+        gridCtx.beginPath();
+        gridCtx.moveTo(0, y);
+        gridCtx.lineTo(gridCanvas.width, y);
+        gridCtx.stroke();
+      }
+    }
+  }, []);
 
   return (
     <div
@@ -92,20 +127,26 @@ export const PickerCanvas: React.FC<PickerCanvasProps> = ({
         }}
       ></canvas>
       <canvas
-        ref={hexCanvasRef}
+        ref={gridCanvasRef}
         width={ZOOM_CANVAS_SIZE}
         height={ZOOM_CANVAS_SIZE}
         style={{
           position: "absolute",
           zIndex: 2,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
           width: "100%",
           height: "100%",
-          fontSize: "14px",
-          fontWeight: "bold",
-          color: hexCode,
+          pointerEvents: "none",
+        }}
+      />
+      <canvas
+        ref={hexCanvasRef}
+        width={ZOOM_CANVAS_SIZE}
+        height={ZOOM_CANVAS_SIZE}
+        style={{
+          position: "absolute",
+          zIndex: 3,
+          width: "100%",
+          height: "100%",
           pointerEvents: "none",
           boxSizing: "border-box",
         }}
